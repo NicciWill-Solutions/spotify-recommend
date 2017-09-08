@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 const CLIENT_ID = 'eb6dfffda5534bb5996e872487be4321';
+=======
+// !!!FILL IN YOUR CLIENT ID FROM YOUR APPLICATION CONSOLE:
+// https://developer.spotify.com/my-applications/#!/applications !!!
+const CLIENT_ID = '93f09d39e57343c3b85bb09adb0a9528';
+>>>>>>> complete exercises
 
 const getFromApi = function (endpoint, query = {}) {
   // You won't need to change anything in this function, but you will use this function 
@@ -25,8 +31,31 @@ const getFromApi = function (endpoint, query = {}) {
 let artist;
 
 const getArtist = function (name) {
-  // Edit me!
-  // (Plan to call `getFromApi()` several times over the whole exercise from here!)
+  return getFromApi('search', {
+    q: name,
+    type: 'artist',
+    limit: 1
+  })
+    .then(data => {
+      artist = data.artists.items[0];
+      return getFromApi(`artists/${artist.id}/related-artists`);
+    })
+    .then(data => {
+      artist.related = data.artists;
+      const promises = [];
+      artist.related.forEach(relatedArtist => {
+        const { id } = relatedArtist;
+        promises.push(getFromApi(`artists/${id}/top-tracks`, { country: 'US' }));
+      });
+      return Promise.all(promises);
+    })
+    .then(artistTracks => {
+      artistTracks.forEach((artistTrack, index) => {
+        artist.related[index].tracks = artistTrack.tracks;
+      });
+      return artist;
+    })
+    .catch(console.log);
 };
 
 
